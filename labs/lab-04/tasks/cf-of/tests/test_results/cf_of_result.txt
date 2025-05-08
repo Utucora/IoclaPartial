@@ -1,0 +1,2 @@
+the Carry Flag and the Overflow Flag are not active
+the Carry Flag and the Overflow Flag are active

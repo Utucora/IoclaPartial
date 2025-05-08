@@ -11,11 +11,15 @@ main:
     PRINTF32 `the Carry Flag and the Overflow Flag are not active\n\x0`
     test al, al
     ;TODO: activate the Carry Flag and the Overflow Flag
-
+    mov al , 0xFF
+    add al, 1
     jc cf_on
     jmp end
 
 cf_on:
+    xor eax, eax
+    mov al, 127
+    add al, 1
     jo cf_of_on
     jmp end
 

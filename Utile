@@ -1,0 +1,235 @@
+Lab1
+
+
+
+
+Lab4
+
+cf-of:
+carry over and overflow flags
+In eax, mai exact in al, daca vrem sa activam un flag de mai sus:
+overflow:
+mov al, 127
+add al, 1
+
+carry-over:
+mov al 0xFF
+add al, 1
+
+ca sa le facem pe amandoua
+mov al, 0xFF
+add al, 1
+xor eax, eax
+mov al, 127
+add al
+
+conditional-jumps:
+newString: db "Goodbye, World!", 0
+PRINTF32 `%s\n\x0`, newString
+;Asa se creeaza si se printeaza un string
+;in section data
+N: dd 6                         ; N = 6
+;in main:
+mov ecx, DWORD [N]
+;Asa se declara o variabila si se pune in ecx
+
+fibonacci:
+PRINTF32 `%d\n\x0`, ecx
+;Asas se printeaza ecx
+Am calculat si fibonacci, nu am invatat nimic util, e o mizerie
+
+
+
+Lab 5:
+division:
+; SPDX-License-Identifier: BSD-3-Clause
+
+%include "printf32.asm"
+
+; https://en.wikibooks.org/wiki/X86_Assembly/Arithmetic
+
+section .data
+    dividend1 db 91
+    divisor1 db 27
+    dividend2 dd 67254
+    divisor2 dw 1349
+    dividend3 dq 69094148
+    divisor3 dd 87621
+
+section .text
+extern printf
+global main
+main:
+    push ebp
+    mov ebp, esp
+
+    xor eax, eax
+
+    mov al, byte [dividend1]
+    mov bl, byte [divisor1]
+    div bl
+
+    xor ebx, ebx
+    mov bl, al
+    PRINTF32 `Quotient: %hhu\n\x0`, ebx
+
+    xor ebx, ebx
+    mov bl, ah
+    PRINTF32 `Remainder: %hhu\n\x0`, ebx
+
+    mov edx, [dividend2]
+    mov ax, dx
+    shr edx, 16
+    mov bx, word [divisor2]
+    div bx
+
+    xor ebx, ebx
+    mov bx, ax
+    PRINTF32 `Quotient: %hhu\n\x0`, ebx
+
+    xor ebx, ebx
+    mov bx, dx
+    PRINTF32 `Remainder: %hu\n\x0`, ebx
+
+    mov eax, dword [dividend3]
+    mov edx, dword [dividend3 + 4]
+    mov ebx, dword [divisor3]
+    div ebx
+
+    PRINTF32 `Quotient: %u\nRemainder: %u\n\x0`, eax, edx
+
+    leave
+    ret
+DIVIZIUNEA ESTE CEL MAI MARE OBSTACOL IN VIATA MEA E ORIBILA SI AR TREBUI SA FIE SIMPLA!!!!!!!!!!!
+
+Putem face si asa mai usor:
+section .data
+    dividend1 db 91
+    divisor1 db 27
+    dividend2 dd 67254
+    divisor2 dw 1349
+    dividend3 dq 69094148
+    divisor3 dd 87621
+
+
+
+    xor eax, eax
+    xor edx, edx
+    xor ebx, ebx
+    movzx ebx, word[divisor2]
+    mov eax, dword[dividend2]
+    div ebx
+    PRINTF32 `Quotient: %u\nRemainder: %u\n\x0`, eax, edx
+    xor edx, edx
+    xor eax, eax
+    xor ebx, ebx
+    movzx ebx, byte[divisor1]
+    mov eax, dword[dividend2]
+    div ebx
+    PRINTF32 `Quotient: %u\nRemainder: %u\n\x0`, eax, edx
+!!!!Nu se pune movzx la eax, deoarece dividend2 deja este dword la fel ca eax fiind registru de 4bytes
+    
+    xor edx, edx
+    xor eax, eax
+    xor ebx, ebx
+    movzx eax, byte[dividend1]
+    movzx ebx, byte[divisor1]
+    div ebx
+    PRINTF32 `Quotient: %u\nRemainder: %u\n\x0`, eax, edx
+!!Aici se pune movzx la amandoua deoarece le luam dintr-un "tip de date" inferior si extindem(extindem de la 1 byte la 4, cat au eax/ebx)
+movzx inseamna de fapt mov zero-extend, adica completeaza cu 0
+
+
+mul:
+; SPDX-License-Identifier: BSD-3-Clause
+
+%include "printf32.asm"
+
+; https://en.wikibooks.org/wiki/X86_Assembly/Arithmetic
+
+section .data
+    num1 db 43
+    num2 db 39
+    num1_w dw 1349
+    num2_w dw 9949
+    num1_d dd 134932
+    num2_d dd 994912
+
+section .text
+extern printf
+global main
+main:
+    push ebp
+    mov ebp, esp
+
+    ; Multiplication for db
+    mov al, byte [num1]
+    mov bl, byte [num2]
+    mul bl
+
+    ; Print result in hexa
+    PRINTF32 `Result is: 0x%hx\n\x0`, eax
+
+
+   ; TODO: Implement multiplication for dw and dd data types.
+    xor eax, eax
+    xor ebx, ebx
+    movzx eax, word[num1_w]
+    movzx ebx, word[num2_w]
+    mul ebx
+    PRINTF32 `Result is: %u\n\x0`,eax
+    leave
+    ret
+
+Pentru inmultire pe dd e cam over, nu merge afisat, dar se poate calcula
+    mov eax, dword [num1_d]
+    mov ebx, dword [num2_d]
+    mul ebx
+
+    ; Print result in hexa
+    PRINTF32 `Result is: 0x%x%x\n\x0`, edx, eax
+Afisat in hexa, deci o mizerie inutila
+
+
+
+
+
+JEGURI JEGURI JEGURI INUTILE 
+
+cmp eax, eax    ; ZF = 1, pentru că diferența e 0
+mov eax, -1     ; SF = 1, pentru că bitul de semn e 1
+
+mov al, 255     ; 0xFF
+add al, 1       ; CF = 1, pentru că 255 + 1 = 256 => overflow pe 8 biți
+
+mov al, 127     ; cel mai mare pozitiv semnat pe 8 biți
+add al, 1       ; OF = 1, rezultatul devine -128, semn greșit
+
+mov al, 0x03    ; 00000011 (2 biți de 1) ⇒ PF = 1 (număr par de biți setați)
+
+ZF	Zero Flag	rezultatul unei operații este zero	universal (signed + unsigned)
+SF	Sign Flag	bitul de semn (cel mai semnificativ) al rezultatului este 1 (negativ)	semnat
+CF	Carry Flag	apare carry/împrumut la adunare/scădere (unsigned overflow)	unsigned
+OF	Overflow Flag	rezultatul are semn greșit (overflow semnat)	signed
+PF	Parity Flag	rezultatul are număr par de biți setați	rar folosit
+
+
+je	jz	ZF = 1	egal	universal
+jne	jnz	ZF = 0	diferit	universal
+jg	jnle	ZF = 0, SF = OF	mai mare (signed)	semnat
+jge	jnl	SF = OF	mai mare sau egal (signed)	semnat
+jl	jnge	SF ≠ OF	mai mic (signed)	semnat
+jle	jng	ZF = 1 or SF ≠ OF	mai mic sau egal (signed)	semnat
+ja	jnbe	CF = 0 and ZF = 0	mai mare (unsigned)	nesemnat
+jae	jnb / jnc	CF = 0	mai mare sau egal (unsigned)	nesemnat
+jb	jnae	CF = 1	mai mic (unsigned)	nesemnat
+jbe	jna	CF = 1 or ZF = 1	mai mic sau egal (unsigned)	nesemnat
+js	-	SF = 1	semn negativ	semnat
+jns	-	SF = 0	semn pozitiv	semnat
+jo	-	OF = 1	overflow	semnat
+jno	-	OF = 0	fără overflow	semnat
+jc	-	CF = 1	carry (depasire la unsigned)	nesemnat
+jnc	-	CF = 0	fără carry	nesemnat
+jp	jpe	PF = 1	paritate pară	rar
+jnp	jpo	PF = 0	paritate impară	rar
+STOP JEGURI INUTILE
