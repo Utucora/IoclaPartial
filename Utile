@@ -190,6 +190,15 @@ Pentru inmultire pe dd e cam over, nu merge afisat, dar se poate calcula
     PRINTF32 `Result is: 0x%x%x\n\x0`, edx, eax
 Afisat in hexa, deci o mizerie inutila
 
+    
+Lab 06:
+
+courses:
+!!!!Cand folosesc PRINTF32 `` trebuie sa se termine cu \x0 pentru a nu printa valori reziduale
+Pentru un exemplu de PRINTF32 bun in lab 6 courses. Se arata cum se pun pe stiva registrii si stringuri etc si se afiseaza cu PRINTF32
+
+mul_arrays:
+    ft util, arata cum sa traversez un array si sa fac smecherii cu dimensiuni din byte in word si sa si printez
 
 
 
