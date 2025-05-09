@@ -78,5 +78,53 @@ main:
 	mov ebp, esp
 	PRINTF32 `The students list is:\n\x0`
 	; TODO: Print the list of students and the courses where they are assigned
-    leave
+	mov esi, students;Pointer catre vectorul de studenti
+	mov ecx, [v_students_count]
+
+loop_student:
+	mov eax, [esi+14]
+	cmp eax, 0
+		je unassigned_student
+	mov eax, [esi+10] ;Id course
+	mov edi, courses
+	mov ebx, [v_courses_count]
+
+find_course:
+	;Verificam daca [edi + 0] == id
+	cmp eax, [edi]
+		je print_student
+	add edi, 19
+	dec ebx
+	cmp ebx, 0
+		jge	find_course
+	jmp unassigned_student
+
+
+unassigned_student:
+	push unassigned
+	push esi
+	PRINTF32 `%s - %s\n\x0`, esi, unassigned
+	dec ecx
+	cmp ecx, 0
+		jle endprog
+	add esi, 18
+	jmp loop_student
+ 
+ print_student:
+	add edi, 4
+	push edi;Course name
+	push esi;Pointer la students
+	PRINTF32 `%s - %s\n\x0`, esi, edi
+	jmp next_student
+
+next_student:
+	dec ecx
+	cmp ecx, 0
+		jle endprog
+	add esi, 18
+	jmp loop_student
+	
+endprog:
+	
+	leave
     ret
