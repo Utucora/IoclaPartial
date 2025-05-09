@@ -200,6 +200,304 @@ Pentru un exemplu de PRINTF32 bun in lab 6 courses. Se arata cum se pun pe stiva
 mul_arrays:
     ft util, arata cum sa traversez un array si sa fac smecherii cu dimensiuni din byte in word si sa si printez
 
+In lab 07 si 08 sunt ft multe chestii utile
+
+
+
+Model program C care apeleaza functii asm
+
+#include <stdio.h>
+
+// Declarăm funcția definită în NASM
+extern int check_row(char* sudoku, int row);
+extern int check_column(char* sudoku, int row);
+extern int check_box(char* sudoku, int row);
+
+int main() {
+    // Exemplu de Sudoku corect (doar prima linie e verificată aici)
+    char sudoku[81] = {
+        '1', '5', '4', '9', '3', '2', '6', '7', '8',
+		'8', '9', '3', '6', '7', '5', '1', '4', '2',
+		'7', '2', '6', '4', '1', '8', '3', '5', '9',
+		'4', '6', '8', '3', '9', '1', '7', '2', '5',
+		'9', '3', '5', '7', '-4', '4', '8', '6', '1',
+		'2', '7', '1', '8', '5', '6', '4', '9', '3',
+		'3', '1', '7', '2', '6', '9', '5', '8', '4',
+		'5', '4', '9', '1', '8', '7', '2', '3', '6',
+		'6', '8', '2', '5', '4', '3', '9', '1', '7'
+    };
+
+    for (int i = 0; i < 9; i++) {
+        int result = check_row(sudoku, i);
+        printf("Row %d is %s\n", i, (result == 1 ? "OK" : "WRONG"));
+        printf("sum: %d\n", result);
+    }
+    
+    for (int i = 0; i < 9; i++) {
+        int result = check_column(sudoku, i);
+        printf("Column %d is %s\n", i, (result == 1 ? "OK" : "WRONG"));
+        printf("sum: %d\n", result);
+    }
+    for (int i = 0; i < 9; i++) {
+        int result = check_box(sudoku, i);
+        printf("Box %d is %s\n", i, (result == 1 ? "OK" : "WRONG"));
+        printf("sum: %d\n", result);
+    }
+    return 0;
+}
+
+cum se compileaza:
+nasm -f elf32 sudoku.asm -o sudoku.o //asa se compileaza un nasm
+gcc -m32 Manual_Checker.c sudoku.o -o program //Cred ca se pot pune mai multe din alea .o la rand, dar aici nu e nevoie, deoarece sudoku.asm contine toate functiile apelate in main:
+
+;%include "../include/io.mac"
+
+extern printf
+global check_row
+global check_column
+global check_box
+; you can declare any helper variables in .data or .bss
+
+section .text
+
+
+; int check_row(char* sudoku, int row);
+check_row:
+    ;; DO NOT MODIFY
+    push    ebp
+    mov     ebp, esp
+    push ebx
+    push ecx
+    push edx
+    push esi
+    push edi
+
+    mov     esi, [ebp + 8]  ; char* sudoku, pointer to 81-long char array
+    mov     edx, [ebp + 12]  ; int row 
+    ;; DO NOT MODIFY
+   
+    ;; Freestyle starts here
+    xor eax, eax
+    imul edx, 9
+    add esi, edx
+    ;Il ducem pe esi pe linia row coloana 1
+    ;Urmeaza sa parcurgem coloana cu coloana si adunam la eax valaorea din spatiu ca int
+    xor ecx, ecx
+loop_for_row:
+    cmp ecx, 9
+        je end_loop_row
+    add al, [esi]
+    ;sub al, 48 ;Transformam din char in int
+    inc ecx
+    inc esi
+    jmp loop_for_row
+
+end_loop_row:
+    cmp eax, 45
+        je row_ok
+    jmp row_not_ok
+
+row_ok:
+    xor eax, eax
+    mov eax, 1
+    jmp end_check_row
+
+row_not_ok:
+    xor eax, eax
+    mov eax, 2
+    jmp end_check_row
+
+    ;; MAKE SURE TO LEAVE YOUR RESULT IN EAX BY THE END OF THE FUNCTION
+    ;; Remember: OK = 1, NOT_OKAY = 2
+    ;; ex. if this row is okay, by this point eax should contain the value 1 
+
+    ;; Freestyle ends here
+end_check_row:
+    ;; DO NOT MODIFY
+
+    pop edi
+    pop esi
+    pop edx
+    pop ecx
+    pop ebx
+    leave
+    ret
+    
+    ;; DO NOT MODIFY
+
+; int check_column(char* sudoku, int column);
+check_column:
+    ;; DO NOT MODIFY
+    push    ebp
+    mov     ebp, esp
+    push ebx
+    push ecx
+    push edx
+    push esi
+    push edi
+
+    mov     esi, [ebp + 8]  ; char* sudoku, pointer to 81-long char array
+    mov     edx, [ebp + 12]  ; int column 
+    ;; DO NOT MODIFY
+   
+    ;; Freestyle starts here
+    xor eax, eax
+    xor ecx, ecx ;Contorul pentru linii(parcurgem pe coloane)
+    add esi, edx
+loop_for_column:
+    cmp ecx, 9
+        je end_loop_column
+    add al, [esi]
+    ;sub al, 48
+    add esi, 9
+    inc ecx
+    jmp loop_for_column
+
+end_loop_column:
+    cmp eax, 45
+        je ok_column
+    jmp not_ok_column
+
+
+
+ok_column:
+    xor eax, eax
+    mov eax, 1
+    jmp end_check_column
+
+not_ok_column:
+    xor eax, eax
+    mov eax, 2
+    jmp end_check_column
+
+    ;; MAKE SURE TO LEAVE YOUR RESULT IN EAX BY THE END OF THE FUNCTION
+    ;; Remember: OK = 1, NOT_OKAY = 2
+    ;; ex. if this column is okay, by this point eax should contain the value 1 
+
+    ;; Freestyle ends here
+end_check_column:
+    ;; DO NOT MODIFY
+
+    pop edi
+    pop esi
+    pop edx
+    pop ecx
+    pop ebx
+    leave
+    ret
+    
+    ;; DO NOT MODIFY
+
+
+; int check_box(char* sudoku, int box);
+check_box:
+    ;; DO NOT MODIFY
+    push    ebp
+    mov     ebp, esp
+    push ebx
+    push ecx
+    push edx
+    push esi
+    push edi
+
+    mov     esi, [ebp + 8]  ; char* sudoku, pointer to 81-long char array
+    mov     edx, [ebp + 12]  ; int box 
+    ;; DO NOT MODIFY
+    ;; Freestyle starts here
+    xor edi, edi
+    xor eax, eax
+    xor ecx, ecx
+
+    cmp edx, 0
+        je start_prog
+    ;Daca mi se zice cutia n, ea are coltul din stanga sus pe linia n/3
+    xor edi, edi ;In edi voi tine numarul liniilor(trebuie sa parcug 3)
+    mov edi, edx
+    xor edx, edx
+    mov ecx, 3
+    mov eax, edx
+    div ecx ;In eax obtin astfel linia de unde incep
+    imul eax, 9
+    add esi, eax
+    xor eax, eax
+    xor ecx, ecx
+    ;Acum il am pe esi la linia corecta, trebuie sa gasesc si coloana
+    xor edx, edx
+    mov edx, edi
+    mov eax, edx
+    xor edx, edx
+    mov ecx, 3
+    div ecx
+    mov ecx, edx
+    xor edx, edx
+    mov edx, edi
+    xor edi, edi
+    imul ecx, 3
+    add esi, ecx
+    xor ecx, ecx
+    xor eax, eax
+    xor edi, edi
+    ;Urmeaza sa parcurg linia coloana cu coloana
+
+start_prog:
+
+move_box_col:
+    cmp ecx, 3
+        je next_line
+    add al, [esi]
+    ;sub al, 48
+    inc ecx
+    inc esi
+    jmp move_box_col
+
+next_line:
+    xor ecx, ecx
+    add edi, 9
+    sub esi, 3
+    add esi, 9
+    cmp edi, 18
+        jg check_ok_box
+    jmp move_box_col
+
+check_ok_box:
+    cmp eax, 45
+        je ok_box
+    jmp not_ok_box
+
+ok_box:
+    xor eax, eax
+    mov eax, 1
+    jmp end_check_box
+
+not_ok_box:
+    xor eax, eax
+    mov eax, 2
+    jmp end_check_box
+
+
+
+
+
+
+    ;; MAKE SURE TO LEAVE YOUR RESULT IN EAX BY THE END OF THE FUNCTION
+    ;; Remember: OK = 1, NOT_OKAY = 2
+    ;; ex. if this box is okay, by this point eax should contain the value 1 
+
+    ;; Freestyle ends here
+end_check_box:
+    ;; DO NOT MODIFY
+
+    pop edi
+    pop esi
+    pop edx
+    pop ecx
+    pop ebx
+    leave
+    ret
+    
+    ;; DO NOT MODIFY
+
+
 
 
 
