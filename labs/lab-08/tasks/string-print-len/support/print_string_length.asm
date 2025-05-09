@@ -2,6 +2,8 @@
 
 section .data
     mystring db "This is my string", 0
+    ;adaugat de mine ce e sub
+    fmt_str db "[By pritntf]%s with the length of %d\n", 0
 
 section .text
 
@@ -27,6 +29,10 @@ out:
     PRINTF32 `[PRINTF32]: %d\n[printf]: \x0`, ecx
 
     ;  TODO: print string length using printf
-
+    push ecx
+    push mystring
+    push fmt_str
+    call printf
+    add esp, 12
     leave
     ret
