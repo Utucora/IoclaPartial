@@ -6,8 +6,8 @@ extern printf
 global main
 main:
     ; input values (eax, edx): the 2 numbers to compute the gcd for
-    mov eax, 49
-    mov edx, 28
+    mov eax, 20
+    mov edx, 30
 
     push eax
     push edx
@@ -24,9 +24,20 @@ swap_values:
     pop edx
 
 subtract_values:
+    push eax
     sub eax,edx
-    jg subtract_values
-    jne swap_values
+    pop edx
+    cmp eax, 0
+        jl neg_eax
+    ;jg subtract_values
+continue_prog:
+    cmp eax, 0
+        je print
+    jmp subtract_values
+
+neg_eax:
+    neg eax
+    jmp continue_prog
 
 gcd_end:
     add eax,edx
@@ -39,6 +50,7 @@ print:
 
     ; TODO 2: print the result in the form of: "gdc(eax, edx)=7" with PRINTF32 macro
     ; output value in eax
-
-    xor eax, eax
+    PRINTF32 `%u\n\x0`, edx
+    pop edx
+    pop eax
     ret
