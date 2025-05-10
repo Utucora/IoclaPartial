@@ -1,0 +1,17 @@
+a) Upon solving the segmentation fault, the only output should be:
+
+Starting machine...
+
+b) Example output:
+
+Location: Ardhalis
+Date: 14/10
+Message type and location are correct! Don't forget to check if the month/day match the keyboard input.
+
+c) Expected output:
+
+4242
+424242
+8484
+4242424242
+42

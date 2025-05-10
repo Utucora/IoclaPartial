@@ -540,3 +540,200 @@ jnc	-	CF = 0	fără carry	nesemnat
 jp	jpe	PF = 1	paritate pară	rar
 jnp	jpo	PF = 0	paritate impară	rar
 STOP JEGURI INUTILE
+
+Model partial 03:
+Subiectul 1
+Ești unul dintre cei mai talentați spioni din toată lumea, și tocmai ai primit vestea că inamicul are niște planuri mărețe,
+pe care le va pune în aplicare în aproximativ o oră. Se pare că soarta omenirii stă în mâinile tale; trebuie să afli ce
+pune la cale inamicul până nu e prea târziu!
+a) [2p] Identifică calea bibliotecii standard C cu care este linkat executabilul crackme.
+b) [1p] Ai interceptat un mesaj codat transmis de către inamic. Trebuie să îl decodifici.
+Mesajul codat a fost salvat în vectorul de signed chars decode_me din fișierul decode.c și a fost obținut prin aplicarea
+operatorului ~ pe fiecare dintre caracterele inițiale.
+c) [4p] De data aceasta ai reușit să interceptezi un mesaj care conține și informații utile!
+Cu toate acestea, există o problemă: inamicul a pus o vrajă pe acest mesaj. Din acest motiv, nu merge să printezi
+direct mesajul. Este afișat doar primul cuvânt, însă tu știi cu siguranță că dimensiunea șirului este de 66 de octeți
+utili, așa cum știi că mesajul poate conține și \0 ca oricare dintre octeții săi.
+Trebuie să modifici printarea mesajului în sorcery.c astfel încât acesta să fie afișat în întregime.
+d) [3p] Ai plecat imediat înapoi către bază pentru a transmite veștile oribile, dar ai fost interceptat de un soldat
+inamic. Acesta nu știe că ești un spion, însă îți cere o parolă.
+Găsește parola analizând executabilul crackme.
+Subiectul 2
+Se pare că ai ajuns înapoi la bază la timp cu informațiile vitale, reușind să întorci balanța în favoarea ta. Acum este
+timpul să ataci.
+a) [3p] Stația principală care se ocupă de emiterea informațiilor către aliații tăi nu funcționează. Rezolvă segmen-
+tation fault-ul din fișierul emitter.asm. ATENȚIE! Nu modifica funcția main!
+b) [4p] Acum că poți transmite informații către aliații tăi, trebuie să îi anunți despre următorul atac. Pentru asta,
+există funcția specială broadcast (implementată extern), care are următoarea semnătură:
+void broadcast(struct info *info);
+struct info {
+int month, day;
+char *location;
+} __attribute__((packed));
+Trebuie să transmiți un mesaj despre următorul atac, planificat să aibă loc în orașul Ardhalis. Luna și ziua atacului
+vor fi introduse de la tastatură.
+Modifică fișierul attack.asm, citește de la tastură luna și ziua atacului și apelează funcția broadcast astfel încât să
+fie afișate datele cerute. ATENȚIE! Nu defini alte variabile globale decât cele deja existente. O structură declarată
+cu __attribute__((packed)) are câmpurile reținute liniar în memorie, fără padding.
+c) [3p] Pentru a autoriza atacul trebuie introdusă o parolă secretă. Scrie în fișierul passwords.asm o funcție care
+să aibă următoarea semnătură:
+int filter(int *src_array, int src_array_len, int *dest_array);
+Funcția va memora în vectorul destinație doar valorile divizibile cu 42 din vectorul sursă, păstrând ordinea
+originală.
+Exemplu: {43, 6, 10, 4242, 82, 982, 165, 424242, 12, 8484, 4242424242, 42} -> {4242, 424242, 8484, 4242424242, 42}.
+Modifică, apoi, fișierul passwords.asm, apelând funcția de mai sus și afișând vectorul cu parola prelucrată (finală).
+ATENȚIE! Trebuie să folosești variabilele transmise prin parametri la funcție în prelucrarea vectorilor! De asemenea,
+lungimea vectorului destinație trebuie să fie returnată de către funcție și utilizată la afișare!
+
+1:
+a)ldd crackme
+ibc.so.6 => /lib/x86_64-linux-gnu/libc.so.6
+
+Răspunsul va fi calea completă către libc.so.6.
+
+
+b)original[i] = ~decode_me[i];
+
+c)    fwrite(msg, 1, 66, stdout);
+
+d)Dai cu strings crackme(nu merge), cu objdump -d crackme(nu merge). Deci deschidem cu ghidra si cautam functia care verifica parola si incerci sa iti dai seama ce face
+
+2:
+a)Muti stringul in care se scrie din .rodata in .data
+b)
+
+section .data
+	; WARNING! You must not define any new global variables.
+	attack_location db "Ardhalis", 0
+	read_fmt db "%d%d", 0
+
+section .text
+extern broadcast
+extern scanf
+global main
+
+main:
+	push ebp
+	mov ebp, esp
+
+	; Rezervăm loc pentru struct info pe stivă (12 octeți)
+	sub esp, 12        ; [ebp-12] = month, [ebp-8] = day, [ebp-4] = location ptr
+
+	; -----------------------
+	; Citim luna și ziua
+	; scanf("%d%d", &month, &day)
+	; -----------------------
+	lea eax, [ebp-12]  ; &month
+	push eax
+	lea eax, [ebp-8]   ; &day
+	push eax
+	push read_fmt
+	call scanf
+	add esp, 12        ; curățăm cei 3 parametri
+
+	; -----------------------
+	; Setăm câmpul .location
+	; -----------------------
+	mov eax, attack_location
+	mov [ebp-4], eax   ; info.location = &attack_location
+
+	; -----------------------
+	; Apelăm broadcast(&info)
+	; -----------------------
+	lea eax, [ebp-12]  ; adresa structurii info
+	push eax
+	call broadcast
+	add esp, 4
+
+	leave
+	ret 
+
+c)
+section .data
+    magic_number equ 42
+
+    ; DO NOT ADD NEW GLOBALS
+    raw_password dd 43, 6, 10, 4242, 82, 982, 165, 424242, 12, 8484, 4242424242, 42
+    raw_password_len equ 13
+    final_password times 13 dd 0
+    fmt db "%d ", 0
+
+section .text
+extern printf
+global main
+
+; ------------------------
+; FUNCȚIA filter
+; ------------------------
+filter:
+    push ebp
+    mov ebp, esp
+
+    mov esi, [ebp + 8]   ; src_array
+    mov ecx, [ebp + 12]  ; src_array_len
+    mov edi, [ebp + 16]  ; dest_array
+    xor eax, eax         ; eax = counter
+
+.loop:
+    cmp ecx, 0
+    je .done
+
+    mov edx, [esi]       ; edx = element curent
+    mov ebx, magic_number
+    cdq
+    idiv ebx             ; edx = rest
+
+    cmp edx, 0
+    jne .skip
+
+    mov ebx, [esi]       ; REG → MEM → REG
+    mov [edi], ebx       ; scriere corectă
+    add edi, 4
+    inc eax              ; am adăugat un element
+
+.skip:
+    add esi, 4
+    dec ecx
+    jmp .loop
+
+.done:
+    pop ebp
+    ret
+
+; ------------------------
+; FUNCȚIA main
+; ------------------------
+main:
+    push ebp
+    mov ebp, esp
+
+    ; Apelăm filter(raw_password, raw_password_len, final_password)
+    push final_password
+    push raw_password_len
+    push raw_password
+    call filter
+    add esp, 12
+
+    ; eax = lungimea rezultatului
+    mov ecx, eax
+    mov esi, final_password
+
+.print_loop:
+    cmp ecx, 0
+    je .end
+
+    push dword [esi]
+    push fmt
+    call printf
+    add esp, 8
+
+    add esi, 4
+    dec ecx
+    jmp .print_loop
+
+.end:
+    leave
+    ret
+Nu merge dar e ceva de genul
+
+

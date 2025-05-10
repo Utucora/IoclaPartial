@@ -1,0 +1,11 @@
+1.a)
+Size of struct s: 20
+1.d)
+0: Hi, there!
+1: This is an invitation to the PCLP2 exam!
+2: Bye, now!
+3: PCLP2 2024-2025
+
+0: Hello!
+1: Nothing to be said
+2: Goodbye!

@@ -1,0 +1,13 @@
+a) Use a CLI command and show the examiner the libc path.
+
+b) Expected output:
+
+You fool
+
+c) Expected output:
+
+The scheduled operation (BOOM) will be executed in Sapphire Ridge.
+
+d) Upon providing the correct input, you should receive this message:
+
+Good! You may enter.
