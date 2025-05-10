@@ -736,4 +736,5 @@ main:
     ret
 Nu merge dar e ceva de genul
 
-
+ca sa pui in rodata pui const la variabila
+cu simbol neexportat pui static
