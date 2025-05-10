@@ -1,0 +1,4 @@
+The ship has arrived in the year: 20
+Mission successful! We arrived at the destination in year 20.
+Memory used by colony: 68 bytes
+Anomalies detected: 4

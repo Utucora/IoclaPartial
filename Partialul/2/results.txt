@@ -1,0 +1,9 @@
+Exercise a: Overflow Detection
+ALERT! Overflow detected in trajectory calculation!
+----------------------------------------
+Exercise b: Matrix Addressing Correction
+Element at position (2,1) is: 80
+----------------------------------------
+Exercise c: Binary Message Processing
+Decoded message: STAR_MAP
+----------------------------------------
