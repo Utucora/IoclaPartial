@@ -738,3 +738,109 @@ Nu merge dar e ceva de genul
 
 ca sa pui in rodata pui const la variabila
 cu simbol neexportat pui static
+
+
+ca sa vezi ce returneaza dai echo $? dupa ce executi programul din terminal
+
+SUBIECT REZOLVAT DE MINE
+
+%include "printf32.asm"
+
+section .data
+    danger db "FrggrLrSmAugNvrvrG", 10, 0
+    heavy_number dd -16772556
+    battle dd -16707020, 447812148, -1968106956, 1609673524, -1, 305402420, -1484674544, -1576992769, -858993460, 178956970
+    ;Adaugat fmt_char
+    fmt_char db "%c", 0
+section .text
+extern printf
+global main
+
+main:
+    push ebp
+    mov ebp, esp
+
+    ; TODO a: Print the dangerous letters from the `danger` string.
+    ; A letter is dangerous if its ASCII code divided by 5 leaves a remainder less than or equal to 1.
+    xor edx, edx
+    mov edx, danger
+loop_a:
+    xor eax, eax
+    cmp byte[edx], 0
+        je done_a
+
+    ;Trec la urmatorul caracter
+    ;Punem in al codul ascii al caracterului pentru a-l
+    ;impartii si a vedea daca e periculos
+    mov al, byte[edx]
+    mov ah, 0
+    xor ebx, ebx
+    mov bl, 5
+    div bl
+    cmp ah, 1
+        jbe condition_true
+    inc edx
+    jmp loop_a
+
+condition_true:
+    xor eax, eax
+    movzx eax, byte[edx]
+    PRINTF32 `%c\x0`, eax
+    inc edx
+    jmp loop_a
+
+done_a:
+
+    ; TODO d: Print the heavy numbers in the `battle` array in hexadecimal format.
+    xor ecx, ecx
+    mov ecx, battle
+    xor eax, eax
+    mov eax, 1
+loop_d:
+    cmp eax, 10
+        jg end_prog
+    jmp check_heavy
+    ; TODO c: Verify whether `heavy_number` is a heavy number.
+    ; A number is considered heavy if its most significant bit (MSB) is set to 1,
+    ; and the number formed by concatenating the third and fourth byte is greater than 255.
+    ; Example: for the number 0xabcdef12, the msb is 1 and the resulting number is 0xcdab
+    ; NOTE: You must print "The number <nr> is heavy" if
+    ; <nr> is heavy, otherwise print "The number <nr> is not heavy".
+check_heavy:    
+    xor edx, edx
+    mov edx, [ecx]
+    shr edx, 31
+    and edx, 1
+    cmp edx, 1
+        jne not_heavy
+    xor edx, edx
+    mov edx, [ecx]
+    shr edx, 16 ;Raman doar bites-ii 3 si 4
+    cmp edx, 255
+        jg heavy
+    jmp not_heavy  
+
+not_heavy:
+    xor edx, edx
+    mov edx, [ecx]
+    ;PRINTF32 `%x IS NOTT HEAVY\n\x0`, edx
+    jmp finish_check_heavy
+
+heavy:
+    xor edx, edx
+    mov edx, [ecx]
+    ;PRINTF32 `%x IS HEAVY \x0`, edx
+    PRINTF32 `%x \x0'`, edx
+
+finish_check_heavy:
+    add ecx, 4
+    inc eax
+    jmp loop_d
+
+end_prog:
+    PRINTF32 `\n\x0'`
+    ; TODO b: Modify return value to 55
+    xor eax, eax
+    mov eax, 55
+    leave
+    ret
